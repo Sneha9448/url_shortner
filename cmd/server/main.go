@@ -10,6 +10,7 @@ import (
 	"url-shortener/internal/config"
 	"url-shortener/internal/handlers"
 	"url-shortener/internal/services"
+	"url-shortener/internal/middleware"
 
 	"github.com/gorilla/mux"
 	"github.com/redis/go-redis/v9"
@@ -58,12 +59,18 @@ func main() {
 	urlService := services.NewURLService(redisClient, urlsCollection)
 
 	// Initialize Handler
-	// You can pass the actual domain from config in a real app
 	domain := fmt.Sprintf("http://localhost:%s", cfg.ServerPort)
 	urlHandler := handlers.NewURLHandler(urlService, domain)
 
+	//  Initialize Rate Limiter
+	rateLimiter := middleware.NewRateLimiter(redisClient, 10, 1)
+	// 10 requests max, refill 1 per second
+
 	// Setup Router
 	r := mux.NewRouter()
+
+	//  Apply Middleware HERE (IMPORTANT)
+	r.Use(rateLimiter.Limit)
 
 	// Define Routes
 	r.HandleFunc("/shorten", urlHandler.Shorten).Methods("POST")
