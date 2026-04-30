@@ -10,6 +10,7 @@ A production-ready URL shortener service built with **Go**, **MongoDB** (for per
 - **Base62 Encoding**: Converts numeric IDs to compact, URL-safe 8-character string identifiers.
 - **Click Tracking**: Asynchronously tracks the number of times a short URL has been visited without slowing down the redirect response.
 - **Expiration Support (TTL)**: Supports optional Time-to-Live for short URLs.
+- **Rate Limiting**: Protects the API against abuse by throttling excessive requests per IP using a Redis-backed Token Bucket algorithm.
 
 ## Architecture
 
@@ -104,6 +105,8 @@ You should see terminal logs indicating successful connections to both Redis and
 │   │   └── config.go           # Environment variable parsing
 │   ├── handlers/
 │   │   └── url_handler.go      # HTTP handlers for API endpoints
+│   ├── middleware/
+│   │   └── rate_limiter.go     # Token bucket rate limiting middleware using Redis
 │   ├── models/
 │   │   └── url.go              # Data structures and BSON/JSON tags
 │   ├── services/
